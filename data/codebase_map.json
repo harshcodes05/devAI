@@ -1,0 +1,676 @@
+{
+  "repository": "financial_sentinel_old",
+  "python_files": 26,
+  "files": {
+    "app.py": {
+      "path": "app.py",
+      "classes": [],
+      "imports": [
+        "joblib",
+        "numpy",
+        "pandas",
+        "pathlib",
+        "streamlit"
+      ],
+      "dependencies": [],
+      "functions": {
+        "load_artifacts": {
+          "calls": [
+            "joblib.load"
+          ]
+        },
+        "predict_transaction": {
+          "calls": [
+            "pd.DataFrame",
+            "rf_model.predict",
+            "rf_model.predict_proba",
+            "scaler.transform"
+          ]
+        }
+      }
+    },
+    "apps/streamlit_app.py": {
+      "path": "apps/streamlit_app.py",
+      "classes": [],
+      "imports": [
+        "os",
+        "pandas",
+        "pathlib",
+        "requests",
+        "streamlit",
+        "time"
+      ],
+      "dependencies": [],
+      "functions": {}
+    },
+    "scripts/benchmark_latency.py": {
+      "path": "scripts/benchmark_latency.py",
+      "classes": [],
+      "imports": [
+        "fastapi.testclient",
+        "numpy",
+        "pandas",
+        "src.api.main",
+        "time"
+      ],
+      "dependencies": [
+        "src/api/main.py"
+      ],
+      "functions": {
+        "run_latency_benchmarks": {
+          "calls": [
+            "batch_latencies.append",
+            "client.post",
+            "df_res.to_string",
+            "float",
+            "np.mean",
+            "np.percentile",
+            "pd.DataFrame",
+            "per_item_latencies.append",
+            "print",
+            "range",
+            "single_latencies.append",
+            "time.perf_counter"
+          ]
+        }
+      }
+    },
+    "scripts/train_v2.py": {
+      "path": "scripts/train_v2.py",
+      "classes": [],
+      "imports": [
+        "joblib",
+        "json",
+        "matplotlib.pyplot",
+        "numpy",
+        "pandas",
+        "pathlib",
+        "seaborn",
+        "sklearn.ensemble",
+        "sklearn.metrics",
+        "sklearn.model_selection",
+        "sklearn.preprocessing",
+        "xgboost"
+      ],
+      "dependencies": [],
+      "functions": {
+        "generate_evaluation_artifacts": {
+          "calls": [
+            "ax.grid",
+            "ax.legend",
+            "ax.plot",
+            "ax.set_title",
+            "ax.set_xlabel",
+            "ax.set_ylabel",
+            "confusion_matrix",
+            "plt.close",
+            "plt.savefig",
+            "plt.style.use",
+            "plt.subplots",
+            "plt.tight_layout",
+            "print",
+            "sns.heatmap"
+          ]
+        },
+        "train_dual_models_v2": {
+          "calls": [
+            "IsolationForest",
+            "StandardScaler",
+            "XGBClassifier",
+            "astype",
+            "df.drop",
+            "f1_score",
+            "float",
+            "generate_evaluation_artifacts",
+            "iso_forest.fit",
+            "joblib.dump",
+            "json.dump",
+            "list",
+            "np.argmax",
+            "open",
+            "pd.DataFrame",
+            "pd.read_csv",
+            "precision_recall_curve",
+            "print",
+            "roc_auc_score",
+            "scaler.fit_transform",
+            "scaler.transform",
+            "sum",
+            "train_test_split",
+            "xgb_model.fit",
+            "xgb_model.predict_proba"
+          ]
+        }
+      }
+    },
+    "src/__init__.py": {
+      "path": "src/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/api/__init__.py": {
+      "path": "src/api/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/api/main.py": {
+      "path": "src/api/main.py",
+      "classes": [],
+      "imports": [
+        "contextlib",
+        "fastapi",
+        "fastapi.middleware.cors",
+        "src.api.v1.router",
+        "src.config",
+        "src.utils.logger",
+        "uvicorn"
+      ],
+      "dependencies": [
+        "src/api/v1/router.py",
+        "src/config.py",
+        "src/utils/logger.py"
+      ],
+      "functions": {
+        "lifespan": {
+          "calls": [
+            "logger.info"
+          ]
+        }
+      }
+    },
+    "src/api/v1/__init__.py": {
+      "path": "src/api/v1/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/api/v1/endpoints/__init__.py": {
+      "path": "src/api/v1/endpoints/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/api/v1/endpoints/health.py": {
+      "path": "src/api/v1/endpoints/health.py",
+      "classes": [],
+      "imports": [
+        "fastapi",
+        "src.config",
+        "src.services.predictor"
+      ],
+      "dependencies": [
+        "src/config.py",
+        "src/services/predictor.py"
+      ],
+      "functions": {
+        "health_check": {
+          "calls": [
+            "router.get"
+          ]
+        },
+        "readiness_check": {
+          "calls": [
+            "router.get"
+          ]
+        }
+      }
+    },
+    "src/api/v1/endpoints/predict.py": {
+      "path": "src/api/v1/endpoints/predict.py",
+      "classes": [],
+      "imports": [
+        "fastapi",
+        "src.schemas.prediction",
+        "src.schemas.transaction",
+        "src.services.predictor",
+        "src.utils.logger",
+        "typing"
+      ],
+      "dependencies": [
+        "src/schemas/prediction.py",
+        "src/schemas/transaction.py",
+        "src/services/predictor.py",
+        "src/utils/logger.py"
+      ],
+      "functions": {
+        "predict_batch": {
+          "calls": [
+            "HTTPException",
+            "len",
+            "logger.error",
+            "logger.info",
+            "predictor_service.predict",
+            "router.post",
+            "str"
+          ]
+        },
+        "predict_transaction": {
+          "calls": [
+            "HTTPException",
+            "logger.error",
+            "predictor_service.predict",
+            "router.post",
+            "str"
+          ]
+        }
+      }
+    },
+    "src/api/v1/router.py": {
+      "path": "src/api/v1/router.py",
+      "classes": [],
+      "imports": [
+        "fastapi",
+        "src.api.v1.endpoints"
+      ],
+      "dependencies": [
+        "src/api/v1/endpoints/__init__.py"
+      ],
+      "functions": {}
+    },
+    "src/config.py": {
+      "path": "src/config.py",
+      "classes": [
+        "Settings"
+      ],
+      "imports": [
+        "pathlib",
+        "pydantic_settings",
+        "typing"
+      ],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/schemas/__init__.py": {
+      "path": "src/schemas/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/schemas/prediction.py": {
+      "path": "src/schemas/prediction.py",
+      "classes": [
+        "PredictionResponse"
+      ],
+      "imports": [
+        "pydantic"
+      ],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/schemas/transaction.py": {
+      "path": "src/schemas/transaction.py",
+      "classes": [
+        "TransactionInput"
+      ],
+      "imports": [
+        "pydantic",
+        "typing"
+      ],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/services/__init__.py": {
+      "path": "src/services/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/services/predictor.py": {
+      "path": "src/services/predictor.py",
+      "classes": [
+        "PredictorService"
+      ],
+      "imports": [
+        "joblib",
+        "json",
+        "pathlib",
+        "src.config",
+        "src.schemas.prediction",
+        "src.schemas.transaction",
+        "src.services.preprocessor",
+        "src.utils.logger"
+      ],
+      "dependencies": [
+        "src/config.py",
+        "src/schemas/prediction.py",
+        "src/schemas/transaction.py",
+        "src/services/preprocessor.py",
+        "src/utils/logger.py"
+      ],
+      "functions": {
+        "__init__": {
+          "calls": [
+            "PreprocessorService",
+            "self._load_artifact",
+            "self._load_threshold"
+          ]
+        },
+        "_load_artifact": {
+          "calls": [
+            "joblib.load",
+            "logger.error",
+            "logger.info",
+            "logger.warning"
+          ]
+        },
+        "_load_threshold": {
+          "calls": [
+            "float",
+            "json.load",
+            "logger.info",
+            "logger.warning",
+            "meta.get",
+            "open",
+            "self.metadata_path.exists"
+          ]
+        },
+        "predict": {
+          "calls": [
+            "PredictionResponse",
+            "float",
+            "int",
+            "logger.info",
+            "max",
+            "self.iso_forest.decision_function",
+            "self.iso_forest.predict",
+            "self.model.predict_proba",
+            "self.preprocessor.transform"
+          ]
+        }
+      }
+    },
+    "src/services/preprocessor.py": {
+      "path": "src/services/preprocessor.py",
+      "classes": [
+        "PreprocessorService"
+      ],
+      "imports": [
+        "joblib",
+        "numpy",
+        "pandas",
+        "pathlib",
+        "src.schemas.transaction",
+        "src.utils.logger"
+      ],
+      "dependencies": [
+        "src/schemas/transaction.py",
+        "src/utils/logger.py"
+      ],
+      "functions": {
+        "__init__": {
+          "calls": [
+            "self._load_scaler"
+          ]
+        },
+        "_load_scaler": {
+          "calls": [
+            "joblib.load",
+            "logger.error",
+            "logger.info"
+          ]
+        },
+        "transform": {
+          "calls": [
+            "pd.DataFrame",
+            "self.scaler.transform"
+          ]
+        }
+      }
+    },
+    "src/utils/__init__.py": {
+      "path": "src/utils/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "src/utils/logger.py": {
+      "path": "src/utils/logger.py",
+      "classes": [],
+      "imports": [
+        "logging",
+        "src.config",
+        "sys"
+      ],
+      "dependencies": [
+        "src/config.py"
+      ],
+      "functions": {
+        "setup_logger": {
+          "calls": [
+            "handler.setFormatter",
+            "logger.addHandler",
+            "logger.setLevel",
+            "logging.Formatter",
+            "logging.StreamHandler",
+            "logging.getLogger"
+          ]
+        }
+      }
+    },
+    "tests/__init__.py": {
+      "path": "tests/__init__.py",
+      "classes": [],
+      "imports": [],
+      "dependencies": [],
+      "functions": {}
+    },
+    "tests/integration/test_api.py": {
+      "path": "tests/integration/test_api.py",
+      "classes": [],
+      "imports": [
+        "fastapi.testclient",
+        "src.api.main",
+        "unittest.mock"
+      ],
+      "dependencies": [
+        "src/api/main.py"
+      ],
+      "functions": {
+        "test_api_27_features_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_api_29_features_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_api_internal_exception_returns_generic_500": {
+          "calls": [
+            "RuntimeError",
+            "client.post",
+            "patch",
+            "response.json"
+          ]
+        },
+        "test_api_invalid_type_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_api_missing_field_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_api_negative_amount_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_health_endpoint": {
+          "calls": [
+            "client.get",
+            "response.json"
+          ]
+        },
+        "test_predict_batch_empty_list_returns_200": {
+          "calls": [
+            "client.post",
+            "response.json"
+          ]
+        },
+        "test_predict_batch_invalid_item_rejected_422": {
+          "calls": [
+            "client.post"
+          ]
+        },
+        "test_predict_batch_valid_batch_accepts_200": {
+          "calls": [
+            "client.post",
+            "len",
+            "response.json"
+          ]
+        },
+        "test_predict_endpoint_success": {
+          "calls": [
+            "client.post",
+            "response.json"
+          ]
+        },
+        "test_readiness_endpoint": {
+          "calls": [
+            "client.get",
+            "response.json"
+          ]
+        }
+      }
+    },
+    "tests/integration/test_full_inference_path.py": {
+      "path": "tests/integration/test_full_inference_path.py",
+      "classes": [],
+      "imports": [
+        "fastapi.testclient",
+        "pytest",
+        "src.api.main",
+        "src.services.predictor"
+      ],
+      "dependencies": [
+        "src/api/main.py",
+        "src/services/predictor.py"
+      ],
+      "functions": {
+        "test_full_inference_pipeline_trace": {
+          "calls": [
+            "client.post",
+            "data.keys",
+            "expected_keys.issubset",
+            "response.json"
+          ]
+        },
+        "test_streamlit_ui_response_field_alignment": {
+          "calls": [
+            "client.post",
+            "json"
+          ]
+        }
+      }
+    },
+    "tests/unit/test_predictor.py": {
+      "path": "tests/unit/test_predictor.py",
+      "classes": [],
+      "imports": [
+        "pathlib",
+        "pytest",
+        "src.schemas.prediction",
+        "src.schemas.transaction",
+        "src.services.predictor"
+      ],
+      "dependencies": [
+        "src/schemas/prediction.py",
+        "src/schemas/transaction.py",
+        "src/services/predictor.py"
+      ],
+      "functions": {
+        "test_model_artifact_failure_handling": {
+          "calls": [
+            "Path",
+            "PredictorService",
+            "pytest.raises",
+            "service._load_artifact"
+          ]
+        },
+        "test_model_artifact_optional_failure_handling": {
+          "calls": [
+            "Path",
+            "PredictorService",
+            "service._load_artifact"
+          ]
+        },
+        "test_model_loaded_correctly": {
+          "calls": [
+            "hasattr",
+            "isinstance"
+          ]
+        },
+        "test_prediction_response_schema_validation": {
+          "calls": [
+            "TransactionInput",
+            "isinstance",
+            "predictor_service.predict"
+          ]
+        }
+      }
+    },
+    "tests/unit/test_schemas.py": {
+      "path": "tests/unit/test_schemas.py",
+      "classes": [],
+      "imports": [
+        "pydantic",
+        "pytest",
+        "src.schemas.transaction"
+      ],
+      "dependencies": [
+        "src/schemas/transaction.py"
+      ],
+      "functions": {
+        "test_27_features_rejected": {
+          "calls": [
+            "TransactionInput",
+            "pytest.raises"
+          ]
+        },
+        "test_29_features_rejected": {
+          "calls": [
+            "TransactionInput",
+            "pytest.raises"
+          ]
+        },
+        "test_invalid_type_rejected": {
+          "calls": [
+            "TransactionInput",
+            "pytest.raises"
+          ]
+        },
+        "test_missing_field_rejected": {
+          "calls": [
+            "TransactionInput",
+            "pytest.raises"
+          ]
+        },
+        "test_negative_amount_rejected": {
+          "calls": [
+            "TransactionInput",
+            "pytest.raises"
+          ]
+        },
+        "test_valid_transaction_input": {
+          "calls": [
+            "TransactionInput",
+            "len"
+          ]
+        }
+      }
+    }
+  }
+}
