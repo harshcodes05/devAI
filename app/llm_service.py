@@ -1,4 +1,10 @@
+import logging
 import time
+import warnings
+
+# Suppress annoying SDK warnings about AFC globally
+warnings.simplefilter("ignore")
+logging.getLogger("google").setLevel(logging.ERROR)
 
 import app.config  # noqa: F401 — ensures .env is loaded
 from google import genai

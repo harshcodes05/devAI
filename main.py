@@ -83,7 +83,10 @@ def ask_question(
         return
 
     # Build context and get LLM answer
-    builder = ContextBuilder(str(CODEBASE_MAP_PATH))
+    builder = ContextBuilder(
+        codebase_map_path=str(CODEBASE_MAP_PATH),
+        code_index_path=str(CODE_INDEX_PATH),
+    )
     context = builder.build(question, results)
 
     llm = LLMService()
