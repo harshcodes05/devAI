@@ -9,6 +9,7 @@ IGNORED_DIRECTORIES = {
     ".pytest_cache",
     ".idea",
     ".vscode",
+    "node_modules",
 }
 
 

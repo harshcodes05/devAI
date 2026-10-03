@@ -45,6 +45,7 @@ def ask_question(
     question: str,
     mode: str = "semantic",
     top_k: int = 5,
+    depth: int = 1,
 ) -> None:
     """Retrieve relevant code and answer a question using the LLM."""
 
@@ -87,7 +88,7 @@ def ask_question(
         codebase_map_path=str(CODEBASE_MAP_PATH),
         code_index_path=str(CODE_INDEX_PATH),
     )
-    context = builder.build(question, results)
+    context = builder.build(question, results, depth=depth)
 
     llm = LLMService()
     answer = llm.answer(question, context)
@@ -134,6 +135,12 @@ def main() -> None:
         default=5,
         help="Number of code units to retrieve (default: 5)",
     )
+    ask_parser.add_argument(
+        "--depth",
+        type=int,
+        default=1,
+        help="Dependency expansion depth (default: 1)",
+    )
 
     args = parser.parse_args()
 
@@ -145,6 +152,7 @@ def main() -> None:
             args.question,
             mode=args.mode,
             top_k=args.top_k,
+            depth=args.depth,
         )
 
     else:

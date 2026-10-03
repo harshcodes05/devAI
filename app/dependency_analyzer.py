@@ -5,29 +5,62 @@ from app.constants import get_python_files
 
 def resolve_import(
     repository_root: str,
-    module_name: str,
+    importing_file: str,
+    binding: dict,
 ) -> str | None:
     """
-    Resolve a Python module name to a file inside the repository.
+    Resolve an import binding to a file inside the repository.
+    Handles relative imports, submodule imports (from app import foo -> app/foo.py),
+    and src/ layouts. Only returns paths for files that exist in the repo.
     """
-    
     root = Path(repository_root).resolve()
+    importer = root / importing_file
     
-    # Convert Python module notation to a filesystem path.
-    module_path = Path(*module_name.split("."))
+    level = binding.get("level", 0)
+    module_name = binding.get("module", "")
+    imported_name = binding.get("name", "")
+
+    # Base path for resolution
+    if level > 0:
+        base = importer.parent
+        for _ in range(level - 1):
+            base = base.parent
+    else:
+        base = root
     
-    # First try: normal Python file
-    python_file = root / f"{module_path}.py"
+    bases_to_try = [base]
+    if level == 0 and (root / "src").is_dir():
+        bases_to_try.append(root / "src")
+
+    module_parts = module_name.split(".") if module_name else []
     
-    if python_file.is_file():
-        return python_file.relative_to(root).as_posix()
-    
-    # Second try: Python package
-    package_init = root / module_path / "__init__.py"
-    
-    if package_init.is_file():
-        return package_init.relative_to(root).as_posix()
-    
+    for b in bases_to_try:
+        # Try `module.name` as a submodule first
+        if imported_name and imported_name != "*":
+            parts_with_name = module_parts + [imported_name]
+            
+            # 1. As a python file
+            py_file = b.joinpath(*parts_with_name).with_suffix(".py")
+            if py_file.is_file():
+                return py_file.relative_to(root).as_posix()
+            
+            # 2. As a package init
+            pkg_init = b.joinpath(*parts_with_name, "__init__.py")
+            if pkg_init.is_file():
+                return pkg_init.relative_to(root).as_posix()
+                
+        # Fallback to just the `module`
+        if module_parts:
+            # 3. As a python file
+            py_file = b.joinpath(*module_parts).with_suffix(".py")
+            if py_file.is_file():
+                return py_file.relative_to(root).as_posix()
+            
+            # 4. As a package init
+            pkg_init = b.joinpath(*module_parts, "__init__.py")
+            if pkg_init.is_file():
+                return pkg_init.relative_to(root).as_posix()
+            
     return None
 
 def analyze_dependencies(
@@ -44,17 +77,20 @@ def analyze_dependencies(
     parsed = parse_python_file(str(file_path))
     
     dependencies = []
+    seen = set()
     
-    for module in parsed["imports"]:
+    for binding in parsed.get("import_bindings", []):
         resolved = resolve_import(
             repository_root,
-            module,
+            relative_file_path,
+            binding,
         )
         
-        if resolved is not None:
+        if resolved is not None and resolved not in seen:
+            seen.add(resolved)
             dependencies.append(
                 {
-                    "module": module,
+                    "module": binding["module"] or "",
                     "file": resolved
                 }
             )
@@ -75,13 +111,8 @@ def build_dependency_graph(repository_root: str) -> dict[str,list[str]]:
     graph = {}
     
     for path in get_python_files(root):
-        
         relative_path = path.relative_to(root).as_posix()
-        
-        analysis = analyze_dependencies(
-            repository_root,
-            relative_path
-        )
+        analysis = analyze_dependencies(repository_root, relative_path)
         
         graph[relative_path] = [
             dependency["file"]
@@ -116,5 +147,4 @@ def trace_dependencies(
             visit(dependency, depth + 1)
 
     visit(start_file, 0)
-
     return result

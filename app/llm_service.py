@@ -1,5 +1,6 @@
 import logging
 import time
+import random
 import warnings
 
 # Suppress annoying SDK warnings about AFC globally
@@ -10,17 +11,7 @@ import app.config  # noqa: F401 — ensures .env is loaded
 from google import genai
 from google.genai import errors
 
-
-class LLMService:
-    def __init__(self):
-        self.client = genai.Client()
-
-    def answer(self, question: str, context: str) -> str:
-        """
-        Answer a developer question using retrieved code context.
-        """
-
-        prompt = f"""
+PROMPT_TEMPLATE = """
 You are a software-engineering codebase assistant.
 
 Answer the developer's question using ONLY the provided repository context.
@@ -46,7 +37,19 @@ Repository context:
 {context}
 """
 
+class LLMService:
+    def __init__(self, client=None):
+        self.client = client if client else genai.Client()
+
+    def answer(self, question: str, context: str) -> str:
+        """
+        Answer a developer question using retrieved code context.
+        """
+        prompt = PROMPT_TEMPLATE.format(question=question, context=context)
+
         max_retries = 5
+        max_total_wait = 60
+        total_wait = 0
 
         for attempt in range(max_retries):
             try:
@@ -57,20 +60,25 @@ Repository context:
                 return response.text
 
             except errors.APIError as e:
-                # Check for quota exhaustion
-                if e.code == 429 or "RESOURCE_EXHAUSTED" in str(e):
+                code = getattr(e, "code", getattr(e, "status_code", None))
+                msg = str(e).lower()
+
+                is_quota = code == 429 and ("quota" in msg or "resource_exhausted" in msg)
+                is_transient = (code in (429, 500, 502, 503, 504)) and not is_quota
+
+                if is_transient:
+                    wait_time = min((2 ** attempt) + random.uniform(0, 1), max_total_wait - total_wait)
+                    if wait_time > 0 and attempt < max_retries - 1:
+                        time.sleep(wait_time)
+                        total_wait += wait_time
+                        continue
+
+                if code in (400, 401, 403, 404):
+                    raise Exception(f"Invalid or missing GEMINI_API_KEY (HTTP {code}).")
+
+                if is_quota:
                     raise Exception("Gemini daily quota exhausted. Try again after the quota resets.")
-                
-                # For other API errors (like 503), retry
-                if attempt < max_retries - 1:
-                    wait = 3 ** (attempt + 1)
-                    time.sleep(wait)
-                else:
-                    raise Exception(f"Gemini API Error after {max_retries} retries: {str(e)}")
-                    
-            except errors.ServerError as e:
-                if attempt < max_retries - 1:
-                    wait = 3 ** (attempt + 1)
-                    time.sleep(wait)
-                else:
-                    raise Exception(f"Gemini API is currently overloaded after {max_retries} retries. Please try again later. (Error: {str(e)})")
+
+                raise Exception(f"Gemini API Error: {str(e)}")
+
+        raise Exception("Gemini API Error: Max retries exceeded.")

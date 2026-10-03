@@ -17,7 +17,10 @@ class CodeIndexer:
         """Extract classes and functions from one Python file."""
 
         source = path.read_text(encoding="utf-8")
-        tree = ast.parse(source)
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            return []
         lines = source.splitlines()
 
         relative_path = path.relative_to(

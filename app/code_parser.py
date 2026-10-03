@@ -1,12 +1,63 @@
 import ast
 from pathlib import Path
 
+class StructureVisitor(ast.NodeVisitor):
+    def __init__(self):
+        self.scope = []
+        self.functions = []
+        self.classes = []
+        self.imports = []
+        self.import_bindings = []
+
+    def visit_ClassDef(self, node):
+        self.classes.append(".".join(self.scope + [node.name]))
+        self.scope.append(node.name)
+        self.generic_visit(node)
+        self.scope.pop()
+
+    def _visit_func(self, node):
+        qual_name = ".".join(self.scope + [node.name])
+        self.functions.append(qual_name)
+        self.scope.append(node.name)
+        self.generic_visit(node)
+        self.scope.pop()
+
+    def visit_FunctionDef(self, node):
+        self._visit_func(node)
+
+    def visit_AsyncFunctionDef(self, node):
+        self._visit_func(node)
+
+    def visit_Import(self, node):
+        for alias in node.names:
+            self.imports.append(alias.name)
+            self.import_bindings.append({
+                "module": alias.name,
+                "name": alias.name.split(".")[-1],
+                "alias": alias.asname,
+                "level": 0,
+            })
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node):
+        level = getattr(node, "level", 0)
+        module = node.module or ""
+        if module:
+            self.imports.append(f"{'.' * level}{module}" if level > 0 else module)
+
+        for alias in node.names:
+            self.import_bindings.append({
+                "module": module,
+                "name": alias.name,
+                "alias": alias.asname,
+                "level": level,
+            })
+        self.generic_visit(node)
 
 def parse_python_file(file_path: str) -> dict:
     """
     Parse a Python file and extract its structure and imports.
     """
-
     path = Path(file_path)
 
     if not path.exists():
@@ -29,52 +80,14 @@ def parse_python_file(file_path: str) -> dict:
             "error": str(error),
         }
 
-    functions = []
-    classes = []
-    imports = []
-    import_bindings = []
-
-    for node in ast.walk(tree):
-
-        if isinstance(
-            node,
-            (ast.FunctionDef, ast.AsyncFunctionDef),
-        ):
-            functions.append(node.name)
-
-        elif isinstance(node, ast.ClassDef):
-            classes.append(node.name)
-
-        elif isinstance(node, ast.Import):
-            for alias in node.names:
-                imports.append(alias.name)
-
-                import_bindings.append(
-                    {
-                        "module": alias.name,
-                        "name": alias.name.split(".")[-1],
-                        "alias": alias.asname,
-                    }
-                )
-
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                imports.append(node.module)
-
-                for alias in node.names:
-                    import_bindings.append(
-                        {
-                            "module": node.module,
-                            "name": alias.name,
-                            "alias": alias.asname,
-                        }
-                    )
+    visitor = StructureVisitor()
+    visitor.visit(tree)
 
     return {
         "path": str(path),
-        "functions": sorted(set(functions)),
-        "classes": sorted(set(classes)),
-        "imports": sorted(set(imports)),
-        "import_bindings": import_bindings,
+        "functions": sorted(set(visitor.functions)),
+        "classes": sorted(set(visitor.classes)),
+        "imports": sorted(set(visitor.imports)),
+        "import_bindings": visitor.import_bindings,
         "error": None,
     }

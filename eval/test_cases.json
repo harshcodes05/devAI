@@ -1,0 +1,22 @@
+[
+  {
+    "question": "How do you retry Gemini API calls on transient errors?",
+    "expected_files": ["app/llm_service.py", "app/embedding_service.py"]
+  },
+  {
+    "question": "Where is the codebase map saved after repository indexing?",
+    "expected_files": ["main.py", "app/repository_analyzer.py"]
+  },
+  {
+    "question": "How is the semantic index structure defined and built?",
+    "expected_files": ["app/embedding_indexer.py"]
+  },
+  {
+    "question": "Which file implements AST parsing to extract functions and classes?",
+    "expected_files": ["app/code_indexer.py", "app/code_parser.py"]
+  },
+  {
+    "question": "How is dependency analysis and internal imports traced?",
+    "expected_files": ["app/dependency_analyzer.py"]
+  }
+]

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from app.code_parser import parse_python_file
 from app.dependency_analyzer import resolve_import
-from app.call_analyzer import extract_function_calls
+from app.call_analyzer import extract_all_function_calls
 from app.constants import get_python_files
 
 
@@ -24,34 +24,33 @@ class RepositoryAnalyzer:
 
         dependencies = []
 
-        for module in parsed["imports"]:
+        for binding in parsed.get("import_bindings", []):
             resolved = resolve_import(
                 str(self.root),
-                module,
+                relative_path,
+                binding,
             )
 
             if resolved is not None:
                 dependencies.append(resolved)
 
         functions = {}
+        
+        try:
+            all_calls = extract_all_function_calls(str(path))
+        except (SyntaxError, ValueError):
+            all_calls = {}
 
         for function_name in parsed["functions"]:
-            try:
-                calls = extract_function_calls(
-                    str(path),
-                    function_name,
-                )
-            except (SyntaxError, ValueError):
-                calls = []
-
             functions[function_name] = {
-                "calls": calls,
+                "calls": all_calls.get(function_name, []),
             }
 
         return {
             "path": relative_path,
             "classes": parsed["classes"],
             "imports": parsed["imports"],
+            "import_bindings": parsed.get("import_bindings", []),
             "dependencies": sorted(set(dependencies)),
             "functions": functions,
         }

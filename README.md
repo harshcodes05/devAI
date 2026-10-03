@@ -1,10 +1,12 @@
 # DevAI
 
+**Live Demo:** [https://gduigywqvjwrjvaacgnmma.streamlit.app/](https://gduigywqvjwrjvaacgnmma.streamlit.app/)
+
 DevAI is an AI-powered Developer Intelligence System that understands a software repository, retrieves relevant implementation context, analyzes file-level dependencies, and assists developers with codebase understanding.
 
 ## Features (V2: Dependency-Aware RAG)
 - **Zero-Bloat RAG Engine**: Pure Python, native AST traversal, and direct LLM calls without heavy abstractions.
-- **1-Hop Dependency-Aware Context**: Parses Python AST to build a directed graph of file dependencies. When retrieving context, it pulls in 1-hop file dependencies and injects their source code, providing file-level context along with function-call metadata.
+- **N-Hop Dependency-Aware Context**: Parses Python AST to build a directed graph of file dependencies. When retrieving context, it pulls in recursive file dependencies up to a specified depth and precisely injects the referenced source code up to a strict 24k-character budget.
 - **Semantic + Keyword Retrieval**: Supports both keyword-based and semantic (embedding-based) search strategies.
 - **Powered by Gemini**: Uses `gemini-embedding-2` for 3072-dimension vectors and `gemini-3.7-flash` for high-context reasoning.
 
@@ -50,7 +52,8 @@ python main.py ask "How does fraud prediction work?"
 
 **Options:**
 - `--mode semantic` (default) or `--mode keyword`
-- `--top-k 5` (number of primary code chunks to retrieve before pulling dependencies)
+- `--top-k 5` (number of primary code chunks to retrieve)
+- `--depth 1` (number of hops to trace down the dependency graph, default 1)
 
 Example:
 ```bash
@@ -60,6 +63,6 @@ python main.py ask "Why would the /predict endpoint return 500?" --mode semantic
 ## Architecture
 - **Parse & Index**: Natively walks `.py` files and uses Python's `ast` module to extract classes and functions.
 - **Dependency Mapping**: Builds a graph of internal file dependencies and intra-function call chains.
-- **Embeddings**: Vectorizes the code using Gemini's embedding model.
-- **Retrieve**: Retrieves top vector matches, looks them up in the dependency graph, and pulls in 1-hop dependent source code.
+- **Embeddings**: Vectorizes the code using Gemini's embedding model into a lightning-fast numpy float32 matrix.
+- **Retrieve**: Retrieves top vector matches, looks them up in the dependency graph, and strictly injects only the directly referenced functions/classes from their dependencies.
 - **Reasoning**: Feeds the augmented file context to Gemini 3.7 Flash for an evidence-backed explanation.
